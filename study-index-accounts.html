@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+
+<style>
+  :root{
+    --bg: #FFFCF2;
+    --panel: #FFFFFF;
+    --glass: #FFFFFF;
+    --glass-strong: #FFFDF0;
+    --border: #F2E3A8;
+    --border-soft: #F6ECC2;
+    --ink: #3A2E14;
+    --ink-soft: #8A7B54;
+    --ink-faint: #C9BA85;
+    --accent: #FFD400;
+    --accent-deep: #E0AE00;
+    --leaf: #7CB342;
+    --danger: #E85D4C;
+
+    --c0: #FFD400;  --c0-bg: #FFF6C2;
+    --c1: #7CB342;  --c1-bg: #E7F3D8;
+    --c2: #FF9F1C;  --c2-bg: #FFE9CC;
+    --c3: #FF6F61;  --c3-bg: #FFE0DC;
+    --c4: #52B788;  --c4-bg: #DCF3E8;
+    --c5: #5AA9E6;  --c5-bg: #DCEBFA;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin: 0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 8% -5%, rgba(255,212,0,0.16), transparent 42%),
+      radial-gradient(circle at 95% 10%, rgba(124,179,66,0.10), transparent 40%);
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: 'Poppins', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app{
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  /* ---------- Auth screen ---------- */
+  .auth-wrap{
+    max-width: 380px;
+    margin: 4rem auto 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 2rem 1.8rem;
+    text-align: center;
+  }
+  .auth-wrap h1{ font-size: 1.5rem; margin: 0 0 4px; }
+  .auth-wrap .sub{ color: var(--ink-soft); font-size: 0.85rem; margin-bottom: 1.6rem; }
+  .auth-wrap input{
+    width: 100%;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    color: var(--ink);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+  }
+  .auth-wrap input:focus{ outline: none; border-color: var(--accent-deep); }
+  .auth-primary-btn{
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    color: #3A2E14;
+    font-weight: 700;
+    font-size: 0.92rem;
+    padding: 11px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+  .auth-primary-btn:hover{ background: var(--accent-deep); }
+  .auth-google-btn{
+    width: 100%;
+    background: var(--panel);
+    border: 1.5px solid var(--border);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 0.88rem;
+    padding: 10px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  .auth-google-btn:hover{ border-color: var(--accent-deep); }
+  .auth-switch{
+    margin-top: 14px;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+  .auth-switch button{
+    background: none;
+    border: none;
+    color: var(--accent-deep);
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.82rem;
+  }
+  .auth-error{
+    color: var(--danger);
+    font-size: 0.8rem;
+    margin: -4px 0 10px;
+  }
+  .auth-divider{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink-faint);
+    font-size: 0.72rem;
+    margin: 14px 0 2px;
+  }
+  .auth-divider::before, .auth-divider::after{
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ---------- Account bar ---------- */
+  .account-bar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.4rem;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+  }
+  .account-email{ font-weight: 600; }
+  .signout-btn{
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--ink-soft);
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .signout-btn:hover{ border-color: var(--danger); color: var(--danger); }
+
+  .top-bar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 1.8rem;
+    flex-wrap: wrap;
+  }
+  .sem-nav{
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .sem-pill{
+    flex-shrink: 0;
+    background: var(--panel);
+    border: 1.5px solid var(--border);
+    color: var(--ink-soft);
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 7px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .sem-pill:hover{ border-color: var(--accent-deep); color: var(--ink); }
+  .sem-pill.active{ background: var(--accent); border-color: var(--accent-deep); color: #3A2E14; }
+  .cal-btn{
+    flex-shrink: 0;
+    background: var(--panel);
+    border: 1.5px solid var(--border);
+    color: var(--ink-soft);
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 7px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .cal-btn:hover{ border-color: var(--accent-deep); color: var(--ink); }
+  .cal-btn.active{ background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.6rem;
+    flex-wrap: wrap;
+  }
+  .hero-text .eyebrow-row{ display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .eyebrow{
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent-deep);
+  }
+  .eyebrow-input{
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent-deep);
+    background: var(--panel);
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+  }
+  .edit-icon-btn{
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+  }
+  .edit-icon-btn:hover{ color: var(--accent-deep); }
+  .hero-text h1{ font-size: 2rem; font-weight: 800; margin: 0 0 8px; }
+  .hero-text p{ margin: 0; color: var(--ink-soft); font-size: 0.94rem; max-width: 40ch; }
+
+  .ring{
+    --pct: 0;
+    width: 92px; height: 92px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent) calc(var(--pct) * 3.6deg), var(--border) 0deg);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; flex-shrink: 0;
+    filter: drop-shadow(0 6px 18px rgba(255,212,0,0.35));
+  }
+  .ring::before{ content: ""; position: absolute; inset: 8px; border-radius: 50%; background: var(--bg); }
+  .ring .ring-label{ position: relative; z-index: 1; text-align: center; }
+  .ring .ring-pct{ font-size: 1.15rem; font-weight: 700; display: block; }
+  .ring .ring-sub{ font-size: 0.6rem; color: var(--ink-soft); text-transform: uppercase; }
+
+  .ring-sm{
+    --pct: 0;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: conic-gradient(var(--ring-color, var(--accent)) calc(var(--pct) * 3.6deg), var(--border) 0deg);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; flex-shrink: 0;
+  }
+  .ring-sm::before{ content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--panel); }
+  .ring-sm span{ position: relative; z-index: 1; font-size: 0.6rem; font-weight: 600; color: var(--ink-soft); }
+
+  .continue-banner{
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%;
+    background: var(--c0-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 0.85rem 1.1rem;
+    margin-bottom: 1.4rem;
+    cursor: pointer;
+    text-align: left;
+  }
+  .continue-banner:hover{ border-color: var(--accent-deep); }
+  .continue-label{ font-size: 0.7rem; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; display: block; margin-bottom: 3px; }
+  .continue-name{ font-size: 0.95rem; font-weight: 700; color: var(--ink); }
+
+  /* ---------- Subject grid ---------- */
+  .grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 12px;
+  }
+  .card{
+    position: relative;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.1rem;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .card:hover{ border-color: var(--card-color, var(--accent)); }
+  .card-top{ display: flex; align-items: center; justify-content: space-between; }
+  .card-icon{
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem;
+    background: var(--card-bg, #FFF6C2);
+  }
+  .card-name{ font-size: 0.98rem; font-weight: 600; margin: 0; }
+  .card-meta{ font-size: 0.74rem; color: var(--ink-soft); font-weight: 500; }
+  .card-del{
+    position: absolute;
+    top: 8px; right: 8px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .card:hover .card-del{ display: flex; }
+  .card-del:hover{ color: var(--danger); border-color: var(--danger); }
+
+  .add-card{
+    border: 1.5px dashed var(--border);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+    color: var(--ink-faint);
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+  }
+  .add-card:hover{ border-color: var(--accent-deep); color: var(--accent-deep); }
+
+  .inline-form{
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 1.2rem;
+  }
+  .inline-form input, .inline-form textarea, .inline-form select{
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.88rem;
+    padding: 8px 10px;
+    border: 1.5px solid var(--border);
+    background: var(--panel);
+    color: var(--ink);
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .inline-form textarea{ resize: vertical; min-height: 60px; }
+  .inline-form-row{ display: flex; gap: 8px; }
+  .inline-form-actions{ display: flex; gap: 8px; margin-top: 2px; }
+  .btn-primary{
+    background: var(--accent); border: none; color: #3A2E14;
+    font-weight: 700; font-size: 0.84rem; padding: 8px 16px;
+    border-radius: 999px; cursor: pointer;
+  }
+  .btn-primary:hover{ background: var(--accent-deep); }
+  .btn-ghost{
+    background: none; border: 1px solid var(--border); color: var(--ink-soft);
+    font-weight: 600; font-size: 0.84rem; padding: 8px 16px;
+    border-radius: 999px; cursor: pointer;
+  }
+  .btn-ghost:hover{ border-color: var(--ink-soft); color: var(--ink); }
+
+  /* ---------- Subject detail ---------- */
+  .back-btn{
+    display: inline-flex; align-items: center; gap: 6px;
+    background: none; border: none; color: var(--ink-soft);
+    font-weight: 600; font-size: 0.85rem; cursor: pointer; padding: 0;
+    margin-bottom: 1.4rem;
+  }
+  .back-btn:hover{ color: var(--accent-deep); }
+
+  .subject-head{
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; margin-bottom: 1.2rem; flex-wrap: wrap;
+  }
+  .subject-head-left{ display: flex; align-items: center; gap: 12px; }
+  .subject-head h2{ font-size: 1.3rem; font-weight: 700; margin: 0 0 4px; }
+  .subject-head .subject-sub{ font-size: 0.78rem; color: var(--ink-soft); font-weight: 500; }
+  .subject-name-input{
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 2px 8px;
+    color: var(--ink);
+    background: var(--panel);
+  }
+
+  .add-slide-toggle{
+    background: var(--accent); border: none; color: #3A2E14;
+    font-weight: 700; font-size: 0.84rem; padding: 9px 16px;
+    border-radius: 999px; cursor: pointer; margin-bottom: 1rem;
+  }
+  .add-slide-toggle:hover{ background: var(--accent-deep); }
+
+  .search-wrap{ margin-bottom: 12px; }
+  .search-input{
+    width: 100%;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    padding: 9px 14px;
+    border: 1.5px solid var(--border);
+    background: var(--panel);
+    color: var(--ink);
+    border-radius: 999px;
+    box-sizing: border-box;
+  }
+  .search-input:focus{ outline: none; border-color: var(--accent); }
+
+  .topics{ list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+  .topic-card{
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+  }
+  .topic-card.done{ opacity: 0.6; }
+  .topic-row{
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    align-items: start;
+    gap: 10px;
+  }
+  .check{
+    width: 22px; height: 22px; margin-top: 1px;
+    border: 1.5px solid var(--border); background: var(--panel);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    padding: 0; border-radius: 50%; color: transparent; font-size: 0.7rem; font-weight: 700;
+  }
+  .check.checked{ background: var(--accent); border-color: var(--accent); color: #3A2E14; box-shadow: 0 0 0 4px var(--c0-bg); }
+  .topic-main a{ color: var(--ink); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+  .topic-main a:hover{ color: var(--accent-deep); }
+  .topic-card.done .topic-main a{ text-decoration: line-through; text-decoration-color: var(--ink-faint); }
+  .topic-main .no-link{ font-weight: 600; font-size: 0.95rem; }
+  .topic-main .notes{ font-size: 0.76rem; color: var(--ink-soft); margin-top: 4px; }
+  .topic-actions{ display: flex; gap: 6px; flex-wrap: wrap; align-self: start; }
+  button.pill-btn{
+    background: none; border: 1px solid var(--border); color: var(--ink-soft);
+    font-weight: 600; font-size: 0.7rem; cursor: pointer; padding: 5px 10px;
+    border-radius: 999px; white-space: nowrap;
+  }
+  button.pill-btn:hover{ background: var(--accent); border-color: var(--accent-deep); color: var(--ink); }
+  button.pill-btn.danger:hover{ background: #FFE0DC; border-color: var(--danger); color: var(--danger); }
+
+  .preview-wrap{ margin: 12px 0 2px 34px; border: 1px solid var(--border); background: var(--bg); border-radius: 10px; overflow: hidden; }
+  .preview-wrap iframe{ width: 100%; height: 340px; border: none; display: block; }
+
+  .empty{
+    padding: 2.2rem 1rem; text-align: center; color: var(--ink-soft);
+    font-size: 0.9rem; border: 1.5px dashed var(--border); border-radius: 14px;
+  }
+  .empty .big{ font-size: 0.98rem; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+  .empty .big::before{ content: "🍋 "; }
+
+  /* ---------- Overview ---------- */
+  .overview-list{ display: flex; flex-direction: column; gap: 10px; }
+  .overview-row{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--glass); border: 1px solid var(--border); border-radius: 12px;
+    padding: 0.9rem 1.1rem;
+  }
+  .overview-row:hover{ border-color: var(--accent-deep); }
+  .overview-row-main{
+    flex: 1;
+    display: grid; grid-template-columns: 130px 1fr 44px; align-items: center; gap: 14px;
+    background: none; border: none; padding: 0; cursor: pointer;
+    font-family: 'Poppins', sans-serif; text-align: left; color: inherit;
+  }
+  .overview-row-name{ font-weight: 600; font-size: 0.9rem; }
+  .overview-row-track{ height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .overview-row-fill{ height: 100%; background: var(--accent); }
+  .overview-row-pct{ font-size: 0.78rem; font-weight: 600; color: var(--ink-soft); text-align: right; }
+  .overview-row-del{
+    flex-shrink: 0;
+    background: var(--panel); border: 1px solid var(--border);
+    width: 26px; height: 26px; border-radius: 50%;
+    font-size: 0.9rem; color: var(--ink-faint); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; line-height: 1;
+  }
+  .overview-row-del:hover{ color: var(--danger); border-color: var(--danger); }
+
+  /* ---------- Calendar ---------- */
+  .cal-wrap{ background: var(--glass); border: 1px solid var(--border); border-radius: 16px; padding: 1rem 1.1rem 1.2rem; margin-bottom: 1rem; }
+  .cal-head{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem; }
+  .cal-nav-btn{ background: var(--panel); border: 1px solid var(--border); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 0.9rem; color: var(--ink-soft); }
+  .cal-nav-btn:hover{ border-color: var(--accent-deep); color: var(--ink); }
+  .cal-month-label{ font-weight: 700; font-size: 0.95rem; }
+  .cal-grid{ display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-dow{ margin-bottom: 4px; }
+  .cal-dow-cell{ text-align: center; font-size: 0.66rem; font-weight: 600; color: var(--ink-faint); }
+  .cal-cell{ min-height: 44px; border-radius: 8px; padding: 4px; background: var(--panel); }
+  .cal-cell.blank{ background: transparent; }
+  .cal-cell.today{ background: var(--c0-bg); border: 1px solid var(--accent-deep); }
+  .cal-daynum{ font-size: 0.7rem; font-weight: 600; color: var(--ink-soft); }
+  .cal-dots{ display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; }
+  .cal-dot{ width: 7px; height: 7px; border-radius: 50%; background: var(--dot-color, var(--accent)); display: inline-block; }
+  .cal-dot.ring{ background: transparent; border: 2px solid var(--dot-color, var(--accent)); width: 6px; height: 6px; }
+  .cal-legend{ display: flex; gap: 18px; font-size: 0.74rem; color: var(--ink-soft); margin-bottom: 1.2rem; }
+  .cal-legend span{ display: inline-flex; align-items: center; gap: 6px; }
+
+  .assignment-list{ display: flex; flex-direction: column; gap: 8px; }
+  .assignment-card{ background: var(--glass); border: 1px solid var(--border); border-radius: 10px; padding: 0.65rem 0.9rem; }
+  .assignment-row{ display: grid; grid-template-columns: 8px auto 1fr auto auto auto; align-items: center; gap: 10px; }
+  .assignment-dot{ width: 8px; height: 8px; border-radius: 50%; }
+  .assignment-subject{ font-size: 0.7rem; font-weight: 600; color: var(--ink-soft); white-space: nowrap; }
+  .assignment-title{ font-size: 0.86rem; font-weight: 600; color: var(--ink); text-align: left; }
+  button.assignment-title.clickable{ background: none; border: none; cursor: pointer; padding: 0; font-family: 'Poppins', sans-serif; }
+  .assignment-desc{ margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); font-size: 0.8rem; color: var(--ink-soft); white-space: pre-wrap; }
+  .assignment-badge{ font-size: 0.66rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge-individual{ background: var(--border-soft); color: var(--ink-soft); }
+  .badge-group{ background: #E9DBFF; color: #6B3FA0; }
+  .assignment-date{ font-size: 0.76rem; font-weight: 600; color: var(--ink-soft); white-space: nowrap; }
+  .assignment-date.overdue{ color: var(--danger); }
+  .assignment-del{ background: none; border: none; color: var(--ink-faint); font-size: 1.1rem; cursor: pointer; }
+  .assignment-del:hover{ color: var(--danger); }
+
+  .status{ font-size: 0.85rem; color: var(--ink-soft); padding: 3rem 0; text-align: center; }
+
+  @media (max-width: 680px){
+    .app{ padding: 1.8rem 1rem 3rem; }
+    .hero{ flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .hero-text h1{ font-size: 1.5rem; }
+    .grid{ grid-template-columns: 1fr 1fr; }
+    .topic-actions{ grid-column: 1 / -1; margin-left: 32px; flex-wrap: wrap; }
+    .topic-row{ grid-template-columns: 24px 1fr; row-gap: 8px; }
+    .preview-wrap{ margin-left: 0; }
+    .top-bar{ flex-direction: column; align-items: stretch; }
+    .overview-row-main{ grid-template-columns: 1fr; row-gap: 6px; }
+    .assignment-row{ grid-template-columns: 8px 1fr auto; row-gap: 6px; }
+    .assignment-subject, .assignment-title, .assignment-badge, .assignment-date{ grid-column: 2 / 3; }
+  }
+  @media (max-width: 420px){
+    .grid{ grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <div class="status">Loading…</div>
+</div>
+
+<script>
+/* ============ FIREBASE CONFIG — replace with your own from Project settings ============ */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+/* ======================================================================================= */
+
+function uid(){ return Math.random().toString(36).slice(2, 10); }
+
+const GENERIC_COLORS = ['c0', 'c1', 'c2', 'c3', 'c4', 'c5'];
+const GENERIC_ICONS = ['📘','📗','📙','📕','📔','📓'];
+
+function defaultData(){
+  return {
+    semesters: Array.from({ length: 6 }, (_, i) => ({
+      id: uid(),
+      name: 'Semester ' + (i + 1),
+      subjects: []
+    })),
+    assignments: [],
+    lastTouched: null
+  };
+}
+
+let data = null;
+let semIndex = 0;
+let view = 'home';
+let searchQuery = '';
+let calMonthDate = new Date();
+const expanded = new Set();
+let addSubjectOpen = false;
+let addSlideOpen = false;
+let editingSlideId = null;
+
+function currentSemester(){
+  return data.semesters[semIndex];
+}
+
+/* ============ Firestore-backed storage (per logged-in user) ============ */
+async function loadFromCloud(){
+  const docRef = db.collection('users').doc(auth.currentUser.uid);
+  const snap = await docRef.get();
+  if(snap.exists){
+    data = snap.data();
+    if(!data.assignments) data.assignments = [];
+    if(data.lastTouched === undefined) data.lastTouched = null;
+  } else {
+    data = defaultData();
+    await docRef.set(data);
+  }
+}
+
+let saveTimer = null;
+async function save(){
+  if(!auth.currentUser) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try{
+      await db.collection('users').doc(auth.currentUser.uid).set(data);
+    }catch(e){
+      console.error('Could not save', e);
+    }
+  }, 250);
+}
+
+/* ============ Auth screen ============ */
+let authMode = 'login'; // or 'signup'
+
+function renderAuth(){
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'auth-wrap';
+  wrap.innerHTML =
+    '<h1>🍋 Study Index</h1>' +
+    '<div class="sub">' + (authMode === 'login' ? 'Log in to your study space' : 'Create your study space') + '</div>';
+
+  const errorSlot = document.createElement('div');
+  wrap.appendChild(errorSlot);
+
+  const emailInput = document.createElement('input');
+  emailInput.type = 'email';
+  emailInput.placeholder = 'Email';
+  wrap.appendChild(emailInput);
+
+  const passInput = document.createElement('input');
+  passInput.type = 'password';
+  passInput.placeholder = 'Password';
+  wrap.appendChild(passInput);
+
+  const primaryBtn = document.createElement('button');
+  primaryBtn.className = 'auth-primary-btn';
+  primaryBtn.textContent = authMode === 'login' ? 'Log in' : 'Create account';
+  primaryBtn.addEventListener('click', async () => {
+    errorSlot.innerHTML = '';
+    const email = emailInput.value.trim();
+    const pass = passInput.value;
+    if(!email || !pass){
+      showAuthError(errorSlot, 'Enter your email and password.');
+      return;
+    }
+    try{
+      if(authMode === 'login'){
+        await auth.signInWithEmailAndPassword(email, pass);
+      } else {
+        await auth.createUserWithEmailAndPassword(email, pass);
+      }
+    }catch(e){
+      showAuthError(errorSlot, friendlyAuthError(e));
+    }
+  });
+  wrap.appendChild(primaryBtn);
+
+  const divider = document.createElement('div');
+  divider.className = 'auth-divider';
+  divider.textContent = 'or';
+  wrap.appendChild(divider);
+
+  const googleBtn = document.createElement('button');
+  googleBtn.className = 'auth-google-btn';
+  googleBtn.textContent = '🔵 Continue with Google';
+  googleBtn.addEventListener('click', async () => {
+    errorSlot.innerHTML = '';
+    try{
+      const provider = new firebase.auth.GoogleAuthProvider();
+      await auth.signInWithPopup(provider);
+    }catch(e){
+      showAuthError(errorSlot, friendlyAuthError(e));
+    }
+  });
+  wrap.appendChild(googleBtn);
+
+  const switchWrap = document.createElement('div');
+  switchWrap.className = 'auth-switch';
+  switchWrap.innerHTML = authMode === 'login' ? "Don't have an account? " : "Already have an account? ";
+  const switchBtn = document.createElement('button');
+  switchBtn.textContent = authMode === 'login' ? 'Sign up' : 'Log in';
+  switchBtn.addEventListener('click', () => { authMode = authMode === 'login' ? 'signup' : 'login'; renderAuth(); });
+  switchWrap.appendChild(switchBtn);
+  wrap.appendChild(switchWrap);
+
+  app.appendChild(wrap);
+}
+
+function showAuthError(slot, msg){
+  slot.innerHTML = '<div class="auth-error">' + escapeHtml(msg) + '</div>';
+}
+function friendlyAuthError(e){
+  const code = e.code || '';
+  if(code.includes('wrong-password') || code.includes('invalid-credential')) return 'Incorrect email or password.';
+  if(code.includes('user-not-found')) return 'No account with that email.';
+  if(code.includes('email-already-in-use')) return 'That email already has an account — try logging in.';
+  if(code.includes('weak-password')) return 'Password should be at least 6 characters.';
+  if(code.includes('invalid-email')) return 'That email looks invalid.';
+  return 'Something went wrong. Try again.';
+}
+
+/* ============ Helpers ============ */
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function embedUrl(url){
+  if(!url) return null;
+  let m = url.match(/docs\.google\.com\/presentation\/d\/([a-zA-Z0-9_-]+)/);
+  if(m) return 'https://docs.google.com/presentation/d/' + m[1] + '/embed?start=false&loop=false&delayms=3000';
+  m = url.match(/docs\.google\.com\/document\/d\/([a-zA-Z0-9_-]+)/);
+  if(m) return 'https://docs.google.com/document/d/' + m[1] + '/preview';
+  m = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if(m) return 'https://drive.google.com/file/d/' + m[1] + '/preview';
+  m = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+  if(m) return 'https://drive.google.com/file/d/' + m[1] + '/preview';
+  if(/\.pdf($|\?)/i.test(url)) return url;
+  return 'https://docs.google.com/viewer?embedded=true&url=' + encodeURIComponent(url);
+}
+
+function normalizeUrl(raw){
+  const t = raw.trim();
+  if(!t) return '';
+  if(/^https?:\/\//i.test(t)) return t;
+  return 'https://' + t;
+}
+
+function subjectStats(sub){
+  const total = sub.slides.length;
+  const done = sub.slides.filter(x => x.reviewed).length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  return { total, done, pct };
+}
+
+function todayISO(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function formatDateLabel(iso){
+  const [y,m,d] = iso.split('-').map(Number);
+  return new Date(y, m-1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+function semesterAssignments(){
+  return data.assignments.filter(a => a.semIndex === semIndex);
+}
+function findSubject(semI, subId){
+  const sem = data.semesters[semI];
+  return sem ? sem.subjects.find(s => s.id === subId) : null;
+}
+
+/* ============ Top bar ============ */
+function renderTopBar(){
+  const bar = document.createElement('div');
+  bar.className = 'top-bar';
+
+  const nav = document.createElement('div');
+  nav.className = 'sem-nav';
+  data.semesters.forEach((sem, i) => {
+    const pill = document.createElement('button');
+    pill.className = 'sem-pill' + (view !== 'overview' && i === semIndex ? ' active' : '');
+    pill.textContent = 'Sem ' + (i + 1);
+    pill.addEventListener('click', () => { semIndex = i; view = 'home'; render(); window.scrollTo(0,0); });
+    nav.appendChild(pill);
+  });
+  const overviewPill = document.createElement('button');
+  overviewPill.className = 'sem-pill' + (view === 'overview' ? ' active' : '');
+  overviewPill.textContent = 'All';
+  overviewPill.addEventListener('click', () => { view = 'overview'; render(); window.scrollTo(0,0); });
+  nav.appendChild(overviewPill);
+  bar.appendChild(nav);
+
+  const calBtn = document.createElement('button');
+  calBtn.className = 'cal-btn' + (view === 'calendar' ? ' active' : '');
+  calBtn.textContent = '📅 Calendar';
+  calBtn.addEventListener('click', () => { view = 'calendar'; render(); window.scrollTo(0,0); });
+  bar.appendChild(calBtn);
+
+  return bar;
+}
+
+function renderAccountBar(){
+  const bar = document.createElement('div');
+  bar.className = 'account-bar';
+  const email = document.createElement('span');
+  email.className = 'account-email';
+  email.textContent = auth.currentUser.email || auth.currentUser.displayName || 'Account';
+  bar.appendChild(email);
+  const signOut = document.createElement('button');
+  signOut.className = 'signout-btn';
+  signOut.textContent = 'Sign out';
+  signOut.addEventListener('click', () => auth.signOut());
+  bar.appendChild(signOut);
+  return bar;
+}
+
+/* ============ Main render ============ */
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  app.appendChild(renderAccountBar());
+  app.appendChild(renderTopBar());
+
+  if(view === 'overview'){ app.appendChild(renderOverview()); return; }
+  if(view === 'calendar'){ app.appendChild(renderCalendar()); return; }
+
+  const subjects = currentSemester().subjects;
+  if(view === 'home'){
+    app.appendChild(renderHome(subjects));
+  } else {
+    const sub = subjects.find(s => s.id === view);
+    if(!sub){ view = 'home'; app.appendChild(renderHome(subjects)); return; }
+    app.appendChild(renderSubject(sub));
+  }
+}
+
+/* ============ Overview ============ */
+function removeSemester(i){
+  if(data.semesters.length <= 1){ alert('You need at least one semester.'); return; }
+  if(!confirm('Remove "' + data.semesters[i].name + '" and everything in it? This can\'t be undone.')) return;
+  data.semesters.splice(i, 1);
+  if(semIndex === i) semIndex = 0;
+  else if(semIndex > i) semIndex -= 1;
+  save();
+  render();
+}
+
+function renderOverview(){
+  const frag = document.createDocumentFragment();
+  const hero = document.createElement('div');
+  hero.className = 'hero';
+  hero.innerHTML =
+    '<div class="hero-text"><div class="eyebrow-row"><span class="eyebrow">🍋 All semesters</span></div>' +
+    '<h1>Your progress at a glance.</h1><p>Tap a semester to jump in.</p></div>';
+  frag.appendChild(hero);
+
+  const list = document.createElement('div');
+  list.className = 'overview-list';
+  data.semesters.forEach((sem, i) => {
+    const total = sem.subjects.reduce((s, sub) => s + sub.slides.length, 0);
+    const done = sem.subjects.reduce((s, sub) => s + sub.slides.filter(x => x.reviewed).length, 0);
+    const pct = total ? Math.round((done/total)*100) : 0;
+
+    const row = document.createElement('div');
+    row.className = 'overview-row';
+
+    const mainBtn = document.createElement('button');
+    mainBtn.className = 'overview-row-main';
+    mainBtn.innerHTML =
+      '<div class="overview-row-name">' + escapeHtml(sem.name) + '</div>' +
+      '<div class="overview-row-track"><div class="overview-row-fill" style="width:' + pct + '%"></div></div>' +
+      '<div class="overview-row-pct">' + (total ? pct + '%' : '—') + '</div>';
+    mainBtn.addEventListener('click', () => { semIndex = i; view = 'home'; render(); window.scrollTo(0,0); });
+    row.appendChild(mainBtn);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'overview-row-del';
+    delBtn.textContent = '×';
+    delBtn.title = 'Remove semester';
+    delBtn.addEventListener('click', (e) => { e.stopPropagation(); removeSemester(i); });
+    row.appendChild(delBtn);
+
+    list.appendChild(row);
+  });
+  frag.appendChild(list);
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'btn-primary';
+  addBtn.style.marginTop = '14px';
+  addBtn.textContent = '+ Add semester';
+  addBtn.addEventListener('click', () => {
+    data.semesters.push({ id: uid(), name: 'Semester ' + (data.semesters.length + 1), subjects: [] });
+    save();
+    render();
+  });
+  frag.appendChild(addBtn);
+
+  return frag;
+}
+
+/* ============ Home ============ */
+function renderHome(subjects){
+  const frag = document.createDocumentFragment();
+  const totalAll = subjects.reduce((s, sub) => s + sub.slides.length, 0);
+  const doneAll = subjects.reduce((s, sub) => s + sub.slides.filter(x => x.reviewed).length, 0);
+  const pctAll = totalAll ? Math.round((doneAll / totalAll) * 100) : 0;
+
+  const hero = document.createElement('div');
+  hero.className = 'hero';
+  const eyebrowRow = document.createElement('div');
+  eyebrowRow.className = 'hero-text';
+
+  const rowTop = document.createElement('div');
+  rowTop.className = 'eyebrow-row';
+  const eyebrow = document.createElement('span');
+  eyebrow.className = 'eyebrow';
+  eyebrow.textContent = '🍋 ' + currentSemester().name;
+  rowTop.appendChild(eyebrow);
+  const editBtn = document.createElement('button');
+  editBtn.className = 'edit-icon-btn';
+  editBtn.textContent = '✏️';
+  editBtn.title = 'Rename semester';
+  editBtn.addEventListener('click', () => {
+    const newName = prompt('Rename this semester:', currentSemester().name);
+    if(newName && newName.trim()){
+      currentSemester().name = newName.trim();
+      save();
+      render();
+    }
+  });
+  rowTop.appendChild(editBtn);
+  eyebrowRow.appendChild(rowTop);
+
+  const h1 = document.createElement('h1');
+  h1.textContent = 'Ready when you are.';
+  eyebrowRow.appendChild(h1);
+  const p = document.createElement('p');
+  p.textContent = totalAll ? (doneAll + ' of ' + totalAll + ' topics reviewed across your subjects.') : 'Add a subject below to start.';
+  eyebrowRow.appendChild(p);
+  hero.appendChild(eyebrowRow);
+
+  const ring = document.createElement('div');
+  ring.className = 'ring';
+  ring.style.setProperty('--pct', pctAll);
+  ring.innerHTML = '<div class="ring-label"><span class="ring-pct">' + pctAll + '%</span><span class="ring-sub">done</span></div>';
+  hero.appendChild(ring);
+  frag.appendChild(hero);
+
+  const lt = data.lastTouched;
+  if(lt && lt.semIndex === semIndex){
+    const sub = findSubject(lt.semIndex, lt.subjectId);
+    if(sub){
+      const banner = document.createElement('button');
+      banner.className = 'continue-banner';
+      banner.innerHTML =
+        '<span class="continue-label">Continue where you left off</span>' +
+        '<span class="continue-name">' + sub.icon + '&nbsp; ' + escapeHtml(sub.name) + ' →</span>';
+      banner.addEventListener('click', () => { view = sub.id; render(); window.scrollTo(0,0); });
+      frag.appendChild(banner);
+    }
+  }
+
+  if(addSubjectOpen){
+    frag.appendChild(buildAddSubjectForm(subjects));
+  }
+
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+
+  subjects.forEach(sub => {
+    const { total, done, pct } = subjectStats(sub);
+    const card = document.createElement('button');
+    card.className = 'card';
+    card.style.setProperty('--card-color', 'var(--' + sub.color + ')');
+    card.style.setProperty('--card-bg', 'var(--' + sub.color + '-bg)');
+
+    const del = document.createElement('span');
+    del.className = 'card-del';
+    del.textContent = '×';
+    del.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if(confirm('Remove "' + sub.name + '" and all its slides?')){
+        currentSemester().subjects = currentSemester().subjects.filter(s => s.id !== sub.id);
+        save();
+        render();
+      }
+    });
+    card.appendChild(del);
+
+    const top = document.createElement('div');
+    top.className = 'card-top';
+    const icon = document.createElement('div');
+    icon.className = 'card-icon';
+    icon.textContent = sub.icon;
+    top.appendChild(icon);
+    const r = document.createElement('div');
+    r.className = 'ring-sm';
+    r.style.setProperty('--pct', pct);
+    r.style.setProperty('--ring-color', 'var(--' + sub.color + ')');
+    r.innerHTML = '<span>' + pct + '%</span>';
+    top.appendChild(r);
+    card.appendChild(top);
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'card-name';
+    nameEl.textContent = sub.name;
+    card.appendChild(nameEl);
+
+    const meta = document.createElement('div');
+    meta.className = 'card-meta';
+    meta.textContent = total ? (done + ' / ' + total + ' reviewed') : 'no content yet';
+    card.appendChild(meta);
+
+    card.addEventListener('click', () => {
+      view = sub.id;
+      data.lastTouched = { semIndex, subjectId: sub.id };
+      save();
+      render();
+      window.scrollTo(0,0);
+    });
+    grid.appendChild(card);
+  });
+
+  const addCard = document.createElement('button');
+  addCard.className = 'card add-card';
+  addCard.textContent = '+ Add subject';
+  addCard.addEventListener('click', () => { addSubjectOpen = !addSubjectOpen; render(); });
+  grid.appendChild(addCard);
+
+  frag.appendChild(grid);
+  return frag;
+}
+
+function buildAddSubjectForm(subjects){
+  const form = document.createElement('div');
+  form.className = 'inline-form';
+  const input = document.createElement('input');
+  input.placeholder = 'Subject name';
+  input.maxLength = 60;
+  form.appendChild(input);
+
+  const actions = document.createElement('div');
+  actions.className = 'inline-form-actions';
+  const addBtn = document.createElement('button');
+  addBtn.className = 'btn-primary';
+  addBtn.textContent = 'Add subject';
+  addBtn.addEventListener('click', () => {
+    const name = input.value.trim();
+    if(!name) return;
+    const idx = subjects.length % GENERIC_COLORS.length;
+    currentSemester().subjects.push({
+      id: uid(),
+      name,
+      icon: GENERIC_ICONS[idx % GENERIC_ICONS.length],
+      color: GENERIC_COLORS[idx],
+      slides: []
+    });
+    addSubjectOpen = false;
+    save();
+    render();
+  });
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'btn-ghost';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.addEventListener('click', () => { addSubjectOpen = false; render(); });
+  actions.appendChild(addBtn);
+  actions.appendChild(cancelBtn);
+  form.appendChild(actions);
+  return form;
+}
+
+/* ============ Subject detail ============ */
+function renderSubject(sub){
+  const frag = document.createDocumentFragment();
+  const { total, done, pct } = subjectStats(sub);
+
+  const back = document.createElement('button');
+  back.className = 'back-btn';
+  back.textContent = '← All subjects';
+  back.addEventListener('click', () => { view = 'home'; searchQuery = ''; addSlideOpen = false; editingSlideId = null; render(); window.scrollTo(0,0); });
+  frag.appendChild(back);
+
+  const head = document.createElement('div');
+  head.className = 'subject-head';
+  const left = document.createElement('div');
+  left.className = 'subject-head-left';
+  const icon = document.createElement('div');
+  icon.className = 'card-icon';
+  icon.style.setProperty('--card-bg', 'var(--' + sub.color + '-bg)');
+  icon.textContent = sub.icon;
+  left.appendChild(icon);
+
+  const titleWrap = document.createElement('div');
+  const nameRow = document.createElement('div');
+  nameRow.style.display = 'flex';
+  nameRow.style.alignItems = 'center';
+  nameRow.style.gap = '8px';
+  const h2 = document.createElement('h2');
+  h2.style.margin = '0';
+  h2.textContent = sub.name;
+  nameRow.appendChild(h2);
+  const editBtn = document.createElement('button');
+  editBtn.className = 'edit-icon-btn';
+  editBtn.textContent = '✏️';
+  editBtn.addEventListener('click', () => {
+    const newName = prompt('Rename this subject:', sub.name);
+    if(newName && newName.trim()){ sub.name = newName.trim(); save(); render(); }
+  });
+  nameRow.appendChild(editBtn);
+  titleWrap.appendChild(nameRow);
+  const subLine = document.createElement('div');
+  subLine.className = 'subject-sub';
+  subLine.textContent = total ? (done + ' / ' + total + ' reviewed') : 'no content yet';
+  titleWrap.appendChild(subLine);
+  left.appendChild(titleWrap);
+  head.appendChild(left);
+
+  const r = document.createElement('div');
+  r.className = 'ring-sm';
+  r.style.setProperty('--pct', pct);
+  r.style.setProperty('--ring-color', 'var(--' + sub.color + ')');
+  r.innerHTML = '<span>' + pct + '%</span>';
+  head.appendChild(r);
+  frag.appendChild(head);
+
+  const addToggle = document.createElement('button');
+  addToggle.className = 'add-slide-toggle';
+  addToggle.textContent = addSlideOpen ? '− Close' : '+ Add slide';
+  addToggle.addEventListener('click', () => { addSlideOpen = !addSlideOpen; editingSlideId = null; render(); });
+  frag.appendChild(addToggle);
+
+  if(addSlideOpen){
+    frag.appendChild(buildSlideForm(sub, null));
+  }
+
+  if(total > 4){
+    const searchWrap = document.createElement('div');
+    searchWrap.className = 'search-wrap';
+    const input = document.createElement('input');
+    input.className = 'search-input';
+    input.placeholder = '🔍 Search topics…';
+    input.value = searchQuery;
+    input.addEventListener('input', () => { searchQuery = input.value; render(); });
+    searchWrap.appendChild(input);
+    frag.appendChild(searchWrap);
+  }
+
+  if(total === 0){
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.innerHTML = '<div class="big">No slides yet</div>Click "+ Add slide" above to add your first one.';
+    frag.appendChild(empty);
+    return frag;
+  }
+
+  const q = searchQuery.trim().toLowerCase();
+  const visibleSlides = q ? sub.slides.filter(s => s.title.toLowerCase().includes(q)) : sub.slides;
+
+  if(visibleSlides.length === 0){
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.innerHTML = '<div class="big">No matches</div>Try a different search term.';
+    frag.appendChild(empty);
+    return frag;
+  }
+
+  const list = document.createElement('ul');
+  list.className = 'topics';
+
+  visibleSlides.forEach(slide => {
+    const li = document.createElement('li');
+    li.className = 'topic-card' + (slide.reviewed ? ' done' : '');
+
+    if(editingSlideId === slide.id){
+      li.appendChild(buildSlideForm(sub, slide));
+      list.appendChild(li);
+      return;
+    }
+
+    const row = document.createElement('div');
+    row.className = 'topic-row';
+
+    const check = document.createElement('button');
+    check.className = 'check' + (slide.reviewed ? ' checked' : '');
+    check.textContent = '✓';
+    check.addEventListener('click', () => {
+      slide.reviewed = !slide.reviewed;
+      data.lastTouched = { semIndex, subjectId: sub.id };
+      save(); render();
+    });
+    row.appendChild(check);
+
+    const main = document.createElement('div');
+    main.className = 'topic-main';
+    if(slide.url){
+      const a = document.createElement('a');
+      a.href = slide.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      a.textContent = slide.title;
+      main.appendChild(a);
+    } else {
+      const span = document.createElement('span');
+      span.className = 'no-link';
+      span.textContent = slide.title;
+      main.appendChild(span);
+    }
+    if(slide.notes){
+      const notes = document.createElement('div');
+      notes.className = 'notes';
+      notes.textContent = slide.notes;
+      main.appendChild(notes);
+    }
+    row.appendChild(main);
+
+    const actions = document.createElement('div');
+    actions.className = 'topic-actions';
+
+    if(slide.url){
+      const viewBtn = document.createElement('button');
+      viewBtn.className = 'pill-btn';
+      viewBtn.textContent = expanded.has(slide.id) ? 'Hide' : 'Preview';
+      viewBtn.addEventListener('click', () => {
+        if(expanded.has(slide.id)) expanded.delete(slide.id); else expanded.add(slide.id);
+        data.lastTouched = { semIndex, subjectId: sub.id };
+        save(); render();
+      });
+      actions.appendChild(viewBtn);
+    }
+
+    const editSlideBtn = document.createElement('button');
+    editSlideBtn.className = 'pill-btn';
+    editSlideBtn.textContent = 'Edit';
+    editSlideBtn.addEventListener('click', () => { editingSlideId = slide.id; addSlideOpen = false; render(); });
+    actions.appendChild(editSlideBtn);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'pill-btn danger';
+    delBtn.textContent = 'Delete';
+    delBtn.addEventListener('click', () => {
+      if(confirm('Delete "' + slide.title + '"?')){
+        sub.slides = sub.slides.filter(x => x.id !== slide.id);
+        save(); render();
+      }
+    });
+    actions.appendChild(delBtn);
+
+    row.appendChild(actions);
+    li.appendChild(row);
+
+    if(expanded.has(slide.id) && slide.url){
+      const wrap = document.createElement('div');
+      wrap.className = 'preview-wrap';
+      const iframe = document.createElement('iframe');
+      iframe.src = embedUrl(slide.url);
+      iframe.setAttribute('allow', 'fullscreen');
+      iframe.setAttribute('loading', 'lazy');
+      wrap.appendChild(iframe);
+      li.appendChild(wrap);
+    }
+
+    list.appendChild(li);
+  });
+
+  frag.appendChild(list);
+  return frag;
+}
+
+function buildSlideForm(sub, existingSlide){
+  const form = document.createElement('div');
+  form.className = 'inline-form';
+
+  const titleInput = document.createElement('input');
+  titleInput.placeholder = 'Slide title';
+  titleInput.maxLength = 100;
+  titleInput.value = existingSlide ? existingSlide.title : '';
+  form.appendChild(titleInput);
+
+  const urlInput = document.createElement('input');
+  urlInput.placeholder = 'Link (Google Drive, Slides, PDF…) — optional';
+  urlInput.value = existingSlide ? (existingSlide.url || '') : '';
+  form.appendChild(urlInput);
+
+  const notesInput = document.createElement('textarea');
+  notesInput.placeholder = 'Notes — optional';
+  notesInput.value = existingSlide ? (existingSlide.notes || '') : '';
+  form.appendChild(notesInput);
+
+  const actions = document.createElement('div');
+  actions.className = 'inline-form-actions';
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'btn-primary';
+  saveBtn.textContent = existingSlide ? 'Save changes' : 'Add slide';
+  saveBtn.addEventListener('click', () => {
+    const title = titleInput.value.trim();
+    if(!title) return;
+    if(existingSlide){
+      existingSlide.title = title;
+      existingSlide.url = normalizeUrl(urlInput.value);
+      existingSlide.notes = notesInput.value.trim();
+      editingSlideId = null;
+    } else {
+      sub.slides.push({
+        id: uid(), title, url: normalizeUrl(urlInput.value),
+        notes: notesInput.value.trim(), reviewed: false
+      });
+      addSlideOpen = false;
+    }
+    save(); render();
+  });
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'btn-ghost';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.addEventListener('click', () => {
+    if(existingSlide) editingSlideId = null; else addSlideOpen = false;
+    render();
+  });
+  actions.appendChild(saveBtn);
+  actions.appendChild(cancelBtn);
+  form.appendChild(actions);
+  return form;
+}
+
+/* ============ Calendar ============ */
+function renderCalendar(){
+  const frag = document.createDocumentFragment();
+  const hero = document.createElement('div');
+  hero.className = 'hero';
+  hero.innerHTML =
+    '<div class="hero-text"><div class="eyebrow-row"><span class="eyebrow">📅 ' + escapeHtml(currentSemester().name) + '</span></div>' +
+    '<h1>Assignments</h1><p>Keep track of what\'s due, and whether it\'s solo or a group job.</p></div>';
+  frag.appendChild(hero);
+
+  const subjects = currentSemester().subjects;
+  const year = calMonthDate.getFullYear();
+  const month = calMonthDate.getMonth();
+  const monthLabel = calMonthDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+
+  const calWrap = document.createElement('div');
+  calWrap.className = 'cal-wrap';
+  const calHead = document.createElement('div');
+  calHead.className = 'cal-head';
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'cal-nav-btn'; prevBtn.textContent = '←';
+  prevBtn.addEventListener('click', () => { calMonthDate = new Date(year, month - 1, 1); render(); });
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'cal-nav-btn'; nextBtn.textContent = '→';
+  nextBtn.addEventListener('click', () => { calMonthDate = new Date(year, month + 1, 1); render(); });
+  const label = document.createElement('div');
+  label.className = 'cal-month-label'; label.textContent = monthLabel;
+  calHead.appendChild(prevBtn); calHead.appendChild(label); calHead.appendChild(nextBtn);
+  calWrap.appendChild(calHead);
+
+  const dowRow = document.createElement('div');
+  dowRow.className = 'cal-grid cal-dow';
+  ['Mo','Tu','We','Th','Fr','Sa','Su'].forEach(d => {
+    const c = document.createElement('div'); c.className = 'cal-dow-cell'; c.textContent = d;
+    dowRow.appendChild(c);
+  });
+  calWrap.appendChild(dowRow);
+
+  const firstOfMonth = new Date(year, month, 1);
+  let startOffset = firstOfMonth.getDay() - 1;
+  if(startOffset < 0) startOffset = 6;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const semAssignments = semesterAssignments();
+
+  const grid = document.createElement('div');
+  grid.className = 'cal-grid';
+  for(let i = 0; i < startOffset; i++){
+    const blank = document.createElement('div'); blank.className = 'cal-cell blank';
+    grid.appendChild(blank);
+  }
+  for(let d = 1; d <= daysInMonth; d++){
+    const iso = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell' + (iso === todayISO() ? ' today' : '');
+    const num = document.createElement('div'); num.className = 'cal-daynum'; num.textContent = d;
+    cell.appendChild(num);
+    const dayAssignments = semAssignments.filter(a => a.dueDate === iso);
+    if(dayAssignments.length){
+      const dots = document.createElement('div'); dots.className = 'cal-dots';
+      dayAssignments.slice(0, 4).forEach(a => {
+        const sub = findSubject(a.semIndex, a.subjectId);
+        const dot = document.createElement('span');
+        dot.className = 'cal-dot' + (a.type === 'group' ? ' ring' : '');
+        dot.style.setProperty('--dot-color', sub ? 'var(--' + sub.color + ')' : 'var(--accent)');
+        dot.title = (sub ? sub.name + ' — ' : '') + a.title + (a.type === 'group' ? ' (Group)' : ' (Individual)');
+        dots.appendChild(dot);
+      });
+      cell.appendChild(dots);
+    }
+    grid.appendChild(cell);
+  }
+  calWrap.appendChild(grid);
+  frag.appendChild(calWrap);
+
+  const legend = document.createElement('div');
+  legend.className = 'cal-legend';
+  legend.innerHTML =
+    '<span><span class="cal-dot" style="--dot-color: var(--ink-soft)"></span> Individual</span>' +
+    '<span><span class="cal-dot ring" style="--dot-color: var(--ink-soft)"></span> Group</span>';
+  frag.appendChild(legend);
+
+  if(subjects.length === 0){
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.innerHTML = '<div class="big">Add a subject first</div>You need at least one subject before adding assignments.';
+    frag.appendChild(empty);
+    return frag;
+  }
+
+  const form = document.createElement('div');
+  form.className = 'inline-form';
+  const subjSelect = document.createElement('select');
+  subjects.forEach(s => {
+    const opt = document.createElement('option'); opt.value = s.id; opt.textContent = s.name;
+    subjSelect.appendChild(opt);
+  });
+  form.appendChild(subjSelect);
+  const titleInput = document.createElement('input');
+  titleInput.placeholder = 'Assignment title'; titleInput.maxLength = 60;
+  form.appendChild(titleInput);
+  const dateInput = document.createElement('input');
+  dateInput.type = 'date'; dateInput.value = todayISO();
+  form.appendChild(dateInput);
+  const descInput = document.createElement('textarea');
+  descInput.placeholder = 'Description (optional)'; descInput.rows = 2;
+  form.appendChild(descInput);
+
+  const typeRow = document.createElement('div');
+  typeRow.className = 'inline-form-row';
+  let chosenType = 'individual';
+  const indivBtn = document.createElement('button');
+  indivBtn.type = 'button'; indivBtn.className = 'btn-ghost'; indivBtn.style.background = 'var(--accent)'; indivBtn.textContent = '👤 Individual';
+  const groupBtn = document.createElement('button');
+  groupBtn.type = 'button'; groupBtn.className = 'btn-ghost'; groupBtn.textContent = '👥 Group';
+  indivBtn.addEventListener('click', () => { chosenType = 'individual'; indivBtn.style.background = 'var(--accent)'; groupBtn.style.background = 'none'; });
+  groupBtn.addEventListener('click', () => { chosenType = 'group'; groupBtn.style.background = 'var(--accent)'; indivBtn.style.background = 'none'; });
+  typeRow.appendChild(indivBtn); typeRow.appendChild(groupBtn);
+  form.appendChild(typeRow);
+
+  const submitBtn = document.createElement('button');
+  submitBtn.className = 'btn-primary';
+  submitBtn.textContent = '+ Add assignment';
+  submitBtn.addEventListener('click', () => {
+    const title = titleInput.value.trim();
+    if(!title || !dateInput.value || !subjSelect.value) return;
+    data.assignments.push({
+      id: uid(), semIndex, subjectId: subjSelect.value, title,
+      dueDate: dateInput.value, type: chosenType, description: descInput.value.trim()
+    });
+    save();
+    titleInput.value = ''; descInput.value = '';
+    render();
+  });
+  form.appendChild(submitBtn);
+  frag.appendChild(form);
+
+  const upcoming = semAssignments.slice().sort((a,b) => a.dueDate.localeCompare(b.dueDate));
+  if(upcoming.length === 0){
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.innerHTML = '<div class="big">Nothing on the calendar</div>Add an assignment above to start tracking due dates.';
+    frag.appendChild(empty);
+  } else {
+    const alist = document.createElement('div');
+    alist.className = 'assignment-list';
+    const descExpanded = renderCalendar._descExpanded || (renderCalendar._descExpanded = new Set());
+    upcoming.forEach(a => {
+      const sub = findSubject(a.semIndex, a.subjectId);
+      const card = document.createElement('div');
+      card.className = 'assignment-card';
+      const row = document.createElement('div');
+      row.className = 'assignment-row';
+      const overdue = a.dueDate < todayISO();
+
+      const dot = document.createElement('span');
+      dot.className = 'assignment-dot';
+      dot.style.background = 'var(--' + (sub ? sub.color : 'accent') + ')';
+      row.appendChild(dot);
+
+      const subjEl = document.createElement('span');
+      subjEl.className = 'assignment-subject';
+      subjEl.textContent = sub ? sub.name : '';
+      row.appendChild(subjEl);
+
+      let titleEl;
+      if(a.description){
+        titleEl = document.createElement('button');
+        titleEl.className = 'assignment-title clickable';
+        titleEl.textContent = a.title + (descExpanded.has(a.id) ? ' ▾' : ' ▸');
+        titleEl.addEventListener('click', () => {
+          if(descExpanded.has(a.id)) descExpanded.delete(a.id); else descExpanded.add(a.id);
+          render();
+        });
+      } else {
+        titleEl = document.createElement('span');
+        titleEl.className = 'assignment-title';
+        titleEl.textContent = a.title;
+      }
+      row.appendChild(titleEl);
+
+      const badge = document.createElement('span');
+      badge.className = 'assignment-badge ' + (a.type === 'group' ? 'badge-group' : 'badge-individual');
+      badge.textContent = a.type === 'group' ? '👥 Group' : '👤 Individual';
+      row.appendChild(badge);
+
+      const dateEl = document.createElement('span');
+      dateEl.className = 'assignment-date' + (overdue ? ' overdue' : '');
+      dateEl.textContent = formatDateLabel(a.dueDate);
+      row.appendChild(dateEl);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'assignment-del';
+      delBtn.textContent = '×';
+      delBtn.addEventListener('click', () => {
+        data.assignments = data.assignments.filter(x => x.id !== a.id);
+        descExpanded.delete(a.id);
+        save(); render();
+      });
+      row.appendChild(delBtn);
+
+      card.appendChild(row);
+      if(a.description && descExpanded.has(a.id)){
+        const desc = document.createElement('div');
+        desc.className = 'assignment-desc';
+        desc.textContent = a.description;
+        card.appendChild(desc);
+      }
+      alist.appendChild(card);
+    });
+    frag.appendChild(alist);
+  }
+
+  return frag;
+}
+
+/* ============ Boot ============ */
+auth.onAuthStateChanged(async (user) => {
+  if(user){
+    await loadFromCloud();
+    view = 'home'; semIndex = 0;
+    render();
+  } else {
+    renderAuth();
+  }
+});
+</script>
+
+</body>
+</html>
