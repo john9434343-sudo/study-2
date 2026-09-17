@@ -473,31 +473,15 @@
   /* ---------- Overview ---------- */
   .overview-list{ display: flex; flex-direction: column; gap: 10px; }
   .overview-row{
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: grid; grid-template-columns: 130px 1fr 44px; align-items: center; gap: 14px;
     background: var(--glass); border: 1px solid var(--border); border-radius: 12px;
-    padding: 0.9rem 1.1rem;
+    padding: 0.9rem 1.1rem; cursor: pointer; text-align: left;
   }
   .overview-row:hover{ border-color: var(--accent-deep); }
-  .overview-row-main{
-    flex: 1;
-    display: grid; grid-template-columns: 130px 1fr 44px; align-items: center; gap: 14px;
-    background: none; border: none; padding: 0; cursor: pointer;
-    font-family: 'Poppins', sans-serif; text-align: left; color: inherit;
-  }
   .overview-row-name{ font-weight: 600; font-size: 0.9rem; }
   .overview-row-track{ height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
   .overview-row-fill{ height: 100%; background: var(--accent); }
   .overview-row-pct{ font-size: 0.78rem; font-weight: 600; color: var(--ink-soft); text-align: right; }
-  .overview-row-del{
-    flex-shrink: 0;
-    background: var(--panel); border: 1px solid var(--border);
-    width: 26px; height: 26px; border-radius: 50%;
-    font-size: 0.9rem; color: var(--ink-faint); cursor: pointer;
-    display: flex; align-items: center; justify-content: center; line-height: 1;
-  }
-  .overview-row-del:hover{ color: var(--danger); border-color: var(--danger); }
 
   /* ---------- Calendar ---------- */
   .cal-wrap{ background: var(--glass); border: 1px solid var(--border); border-radius: 16px; padding: 1rem 1.1rem 1.2rem; margin-bottom: 1rem; }
@@ -545,7 +529,7 @@
     .topic-row{ grid-template-columns: 24px 1fr; row-gap: 8px; }
     .preview-wrap{ margin-left: 0; }
     .top-bar{ flex-direction: column; align-items: stretch; }
-    .overview-row-main{ grid-template-columns: 1fr; row-gap: 6px; }
+    .overview-row{ grid-template-columns: 1fr; row-gap: 6px; }
     .assignment-row{ grid-template-columns: 8px 1fr auto; row-gap: 6px; }
     .assignment-subject, .assignment-title, .assignment-badge, .assignment-date{ grid-column: 2 / 3; }
   }
@@ -563,12 +547,12 @@
 <script>
 /* ============ FIREBASE CONFIG — replace with your own from Project settings ============ */
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDrjtKV9w0JX5HRTTGlln6fWAMdXh46pME",
+  authDomain: "study-index-2b691.firebaseapp.com",
+  projectId: "study-index-2b691",
+  storageBucket: "study-index-2b691.firebasestorage.app",
+  messagingSenderId: "1016624508792",
+  appId: "1016624508792"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -842,16 +826,6 @@ function render(){
 }
 
 /* ============ Overview ============ */
-function removeSemester(i){
-  if(data.semesters.length <= 1){ alert('You need at least one semester.'); return; }
-  if(!confirm('Remove "' + data.semesters[i].name + '" and everything in it? This can\'t be undone.')) return;
-  data.semesters.splice(i, 1);
-  if(semIndex === i) semIndex = 0;
-  else if(semIndex > i) semIndex -= 1;
-  save();
-  render();
-}
-
 function renderOverview(){
   const frag = document.createDocumentFragment();
   const hero = document.createElement('div');
@@ -867,41 +841,16 @@ function renderOverview(){
     const total = sem.subjects.reduce((s, sub) => s + sub.slides.length, 0);
     const done = sem.subjects.reduce((s, sub) => s + sub.slides.filter(x => x.reviewed).length, 0);
     const pct = total ? Math.round((done/total)*100) : 0;
-
-    const row = document.createElement('div');
+    const row = document.createElement('button');
     row.className = 'overview-row';
-
-    const mainBtn = document.createElement('button');
-    mainBtn.className = 'overview-row-main';
-    mainBtn.innerHTML =
+    row.innerHTML =
       '<div class="overview-row-name">' + escapeHtml(sem.name) + '</div>' +
       '<div class="overview-row-track"><div class="overview-row-fill" style="width:' + pct + '%"></div></div>' +
       '<div class="overview-row-pct">' + (total ? pct + '%' : '—') + '</div>';
-    mainBtn.addEventListener('click', () => { semIndex = i; view = 'home'; render(); window.scrollTo(0,0); });
-    row.appendChild(mainBtn);
-
-    const delBtn = document.createElement('button');
-    delBtn.className = 'overview-row-del';
-    delBtn.textContent = '×';
-    delBtn.title = 'Remove semester';
-    delBtn.addEventListener('click', (e) => { e.stopPropagation(); removeSemester(i); });
-    row.appendChild(delBtn);
-
+    row.addEventListener('click', () => { semIndex = i; view = 'home'; render(); window.scrollTo(0,0); });
     list.appendChild(row);
   });
   frag.appendChild(list);
-
-  const addBtn = document.createElement('button');
-  addBtn.className = 'btn-primary';
-  addBtn.style.marginTop = '14px';
-  addBtn.textContent = '+ Add semester';
-  addBtn.addEventListener('click', () => {
-    data.semesters.push({ id: uid(), name: 'Semester ' + (data.semesters.length + 1), subjects: [] });
-    save();
-    render();
-  });
-  frag.appendChild(addBtn);
-
   return frag;
 }
 
